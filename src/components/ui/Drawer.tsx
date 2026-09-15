@@ -20,18 +20,21 @@ export const Drawer: React.FC<DrawerProps> = ({
   onClose,
   onSelectOtherToy,
 }) => {
-  if (!isOpen || !toy) return null;
+  const toyName = toy?.toy_name?.toLowerCase();
 
   // Find other occurrences of this toy across hubs
   const sameToyAcrossHubs = useMemo(() => {
+    if (!toyName) return [];
     return allRows.filter(
-      (r) => r.toy_name.toLowerCase() === toy.toy_name.toLowerCase()
+      (r) => r.toy_name.toLowerCase() === toyName
     );
-  }, [allRows, toy.toy_name]);
+  }, [allRows, toyName]);
 
   const totalAcrossAllHubs = useMemo(() => {
     return sameToyAcrossHubs.reduce((sum, r) => sum + r.total_stock, 0);
   }, [sameToyAcrossHubs]);
+
+  if (!isOpen || !toy) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">

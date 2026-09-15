@@ -132,12 +132,14 @@ export function getAvailabilityBuckets(
   const filtered = detailRows.filter((r) => {
     if (hub !== 'All' && r.library_name !== hub) return false;
     if (toyType !== 'All' && r.toy_type !== toyType) return false;
-    return Boolean(r.availability_bucket);
+    if (!r.availability_bucket) return false;
+    const b = r.availability_bucket.trim().toLowerCase();
+    return b.startsWith('available') || b.includes('day');
   });
 
   const bucketCounts = new Map<string, number>();
   for (const row of filtered) {
-    const b = row.availability_bucket;
+    const b = row.availability_bucket.trim();
     bucketCounts.set(b, (bucketCounts.get(b) || 0) + 1);
   }
 
@@ -150,6 +152,8 @@ export function getAvailabilityBuckets(
     'Available in 11-13 Days',
     'Available in 12-14 Days',
     'Available in 13-15 Days',
+    'Available in 14-16 Days',
+    'Available in 15-17 Days',
     'Available in 16-18 Days',
     'Available in 17-18 Days',
     'Available in 18-18 Days',
@@ -170,7 +174,7 @@ export function getAvailabilityBuckets(
     }
   }
 
-  // Any remaining buckets
+  // Any remaining valid buckets
   for (const [key, count] of bucketCounts.entries()) {
     result.push({
       label: key,

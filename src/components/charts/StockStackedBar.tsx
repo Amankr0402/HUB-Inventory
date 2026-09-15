@@ -35,22 +35,27 @@ export const StockStackedBar: React.FC<StockStackedBarProps> = ({
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-xl border border-purple-100 text-xs space-y-1.5 z-50">
-          <p className="font-bold text-slate-800 border-b border-slate-100 pb-1">Stock Composition</p>
-          {payload.map((entry: any) => {
-            const pct = (entry.value / total);
-            return (
-              <div key={entry.name} className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                  <span className="text-slate-600 font-medium">{entry.name}:</span>
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 rounded-xl shadow-xl border border-purple-100 text-xs space-y-2 z-50 min-w-[200px]">
+          <p className="font-extrabold text-slate-800 border-b border-slate-100 pb-1">Stock Composition</p>
+          <div className="space-y-1.5">
+            {payload.map((entry: any) => {
+              const pct = entry.value / total;
+              return (
+                <div key={entry.name} className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                    <span className="text-slate-600 font-medium">{entry.name}:</span>
+                  </div>
+                  <div className="font-extrabold text-slate-900">
+                    {formatNumber(entry.value)} <span className="text-slate-500 font-normal">({formatPercent(pct)})</span>
+                  </div>
                 </div>
-                <div className="font-bold text-slate-900">
-                  {formatNumber(entry.value)} <span className="text-slate-400 font-normal">({formatPercent(pct)})</span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-purple-600 font-semibold pt-1 border-t border-purple-50 text-center">
+            Click segment to view item details
+          </p>
         </div>
       );
     }
@@ -59,9 +64,11 @@ export const StockStackedBar: React.FC<StockStackedBarProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col justify-center">
-      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
-        <span>Stock Composition</span>
-        <span className="text-slate-400 font-normal text-[11px]">{formatNumber(total)} total units</span>
+      <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-2">
+        <span>Stock Composition Ratio</span>
+        <span className="px-2 py-0.5 rounded-md bg-purple-100/70 text-purple-800 text-[11px] font-extrabold">
+          {formatNumber(total)} units total
+        </span>
       </div>
 
       <div className="h-10 w-full">
@@ -102,33 +109,48 @@ export const StockStackedBar: React.FC<StockStackedBarProps> = ({
         </ResponsiveContainer>
       </div>
 
-      {/* Legend with interactive click */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 border-t border-purple-50 text-xs">
+      {/* Interactive Legend with exact numbers */}
+      <div className="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-purple-100/80 text-xs">
         <button
           onClick={() => onDrilldown && onDrilldown('Available')}
-          className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors group"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-2 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-100 text-left transition-all group"
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 group-hover:scale-110 transition-transform" />
-          <span className="text-slate-600 font-medium">Available</span>
-          <span className="font-bold text-slate-800">{formatPercent(available / total)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="text-slate-700 font-semibold">Available</span>
+          </div>
+          <span className="font-extrabold text-emerald-900 text-[11px] sm:text-xs">
+            {formatNumber(available)}{' '}
+            <span className="text-emerald-700 font-medium">({formatPercent(available / total)})</span>
+          </span>
         </button>
 
         <button
           onClick={() => onDrilldown && onDrilldown('Rented Out')}
-          className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-2 rounded-xl bg-purple-50/70 hover:bg-purple-100/70 border border-purple-100 text-left transition-all group"
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-purple-600 group-hover:scale-110 transition-transform" />
-          <span className="text-slate-600 font-medium">Rented Out</span>
-          <span className="font-bold text-slate-800">{formatPercent(rented / total)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-600 shrink-0" />
+            <span className="text-slate-700 font-semibold">Rented Out</span>
+          </div>
+          <span className="font-extrabold text-purple-900 text-[11px] sm:text-xs">
+            {formatNumber(rented)}{' '}
+            <span className="text-purple-700 font-medium">({formatPercent(rented / total)})</span>
+          </span>
         </button>
 
         <button
           onClick={() => onDrilldown && onDrilldown('Damages')}
-          className="flex items-center gap-1.5 hover:text-amber-700 transition-colors group"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-2 rounded-xl bg-amber-50/70 hover:bg-amber-100/70 border border-amber-100 text-left transition-all group"
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 group-hover:scale-110 transition-transform" />
-          <span className="text-slate-600 font-medium">Damages</span>
-          <span className="font-bold text-slate-800">{formatPercent(damages / total)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="text-slate-700 font-semibold">Damages</span>
+          </div>
+          <span className="font-extrabold text-amber-900 text-[11px] sm:text-xs">
+            {formatNumber(damages)}{' '}
+            <span className="text-amber-700 font-medium">({formatPercent(damages / total)})</span>
+          </span>
         </button>
       </div>
     </div>
