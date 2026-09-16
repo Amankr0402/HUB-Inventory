@@ -1,6 +1,7 @@
 import type {
   ChartBucketItem,
   DetailRow,
+  HubDamageItem,
   HubSummary,
   StockOverviewStats,
   SummaryMatrix,
