@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "sync-data": "node scripts/syncData.cjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

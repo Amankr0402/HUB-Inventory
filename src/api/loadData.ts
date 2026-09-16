@@ -18,11 +18,24 @@ const DETAIL_PROXY_URL = '/metabase/public/question/c1fe3252-e3b1-4117-959c-aa37
 const SUMMARY_FALLBACK_URL = '/data/summary.csv';
 const DETAIL_FALLBACK_URL = '/data/detail.csv';
 
-async function fetchTextWithTimeout(url: string, timeoutMs = 30000): Promise<string> {
+async function fetchTextWithTimeout(url: string, timeoutMs = 35000): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Append cache buster to guarantee fresh live responses from Metabase
+  const separator = url.includes('?') ? '&' : '?';
+  const noCacheUrl = `${url}${separator}_t=${Date.now()}`;
+
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(noCacheUrl, {
+      signal: controller.signal,
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    });
     clearTimeout(timer);
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -42,7 +55,7 @@ async function fetchSummaryDataset(): Promise<{ text: string; isCached: boolean 
   // 1. Try Dev Proxy if in dev mode
   if (import.meta.env.DEV) {
     try {
-      const text = await fetchTextWithTimeout(SUMMARY_PROXY_URL, 25000);
+      const text = await fetchTextWithTimeout(SUMMARY_PROXY_URL, 30000);
       return { text, isCached: false };
     } catch (err) {
       console.warn('Dev proxy failed for summary, attempting direct live endpoint...', err);
@@ -51,15 +64,24 @@ async function fetchSummaryDataset(): Promise<{ text: string; isCached: boolean 
 
   // 2. Try Direct Live Metabase URL
   try {
-    const text = await fetchTextWithTimeout(SUMMARY_LIVE_URL, 30000);
+    const text = await fetchTextWithTimeout(SUMMARY_LIVE_URL, 35000);
     return { text, isCached: false };
   } catch (err) {
-    console.warn('Direct live summary fetch failed, falling back to cached CSV snapshot...', err);
+    console.warn('Direct live summary fetch failed, trying CORS live proxy...', err);
   }
 
-  // 3. Fallback to local snapshot
+  // 3. Try Public CORS Live Proxy
   try {
-    const res = await fetch(SUMMARY_FALLBACK_URL);
+    const corsProxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(SUMMARY_LIVE_URL)}`;
+    const text = await fetchTextWithTimeout(corsProxyUrl, 30000);
+    return { text, isCached: false };
+  } catch (err) {
+    console.warn('CORS live proxy failed, falling back to local snapshot...', err);
+  }
+
+  // 4. Fallback to local snapshot
+  try {
+    const res = await fetch(`${SUMMARY_FALLBACK_URL}?_t=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Fallback HTTP ${res.status}`);
     const text = await res.text();
     return { text, isCached: true };
@@ -73,7 +95,7 @@ async function fetchDetailDataset(): Promise<{ text: string; isCached: boolean }
   // 1. Try Dev Proxy if in dev mode
   if (import.meta.env.DEV) {
     try {
-      const text = await fetchTextWithTimeout(DETAIL_PROXY_URL, 30000);
+      const text = await fetchTextWithTimeout(DETAIL_PROXY_URL, 35000);
       return { text, isCached: false };
     } catch (err) {
       console.warn('Dev proxy failed for detail, attempting direct live endpoint...', err);
@@ -82,15 +104,24 @@ async function fetchDetailDataset(): Promise<{ text: string; isCached: boolean }
 
   // 2. Try Direct Live Metabase URL
   try {
-    const text = await fetchTextWithTimeout(DETAIL_LIVE_URL, 35000);
+    const text = await fetchTextWithTimeout(DETAIL_LIVE_URL, 40000);
     return { text, isCached: false };
   } catch (err) {
-    console.warn('Direct live detail fetch failed, falling back to cached CSV snapshot...', err);
+    console.warn('Direct live detail fetch failed, trying CORS live proxy...', err);
   }
 
-  // 3. Fallback to local snapshot
+  // 3. Try Public CORS Live Proxy
   try {
-    const res = await fetch(DETAIL_FALLBACK_URL);
+    const corsProxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(DETAIL_LIVE_URL)}`;
+    const text = await fetchTextWithTimeout(corsProxyUrl, 35000);
+    return { text, isCached: false };
+  } catch (err) {
+    console.warn('CORS live proxy failed, falling back to local snapshot...', err);
+  }
+
+  // 4. Fallback to local snapshot
+  try {
+    const res = await fetch(`${DETAIL_FALLBACK_URL}?_t=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Fallback HTTP ${res.status}`);
     const text = await res.text();
     return { text, isCached: true };
@@ -118,6 +149,7 @@ export async function loadInventoryData(): Promise<LoadedDataResult> {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
     hour12: true,
   });
 

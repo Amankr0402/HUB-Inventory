@@ -49,20 +49,31 @@ export const Header: React.FC = () => {
 
           {/* Timestamp & Badges */}
           <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <span>Data as of <strong className="text-slate-700">{dataTimestamp || 'Loading...'}</strong></span>
-            {isCachedFallback && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200" title="Using local cached snapshot">
-                <AlertCircle className="w-3 h-3 text-amber-600" />
-                Cached Data
+            {!isCachedFallback ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                Live Metabase Sync
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs" title="Using local cached snapshot">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                Offline Snapshot
               </span>
             )}
+
+            <span className="text-slate-400">|</span>
+            <span>Synced: <strong className="text-slate-700">{dataTimestamp || 'Connecting...'}</strong></span>
+
             <button
               onClick={() => refetch()}
               disabled={isLoading}
-              className="p-1 hover:bg-purple-50 text-purple-600 rounded-md transition-colors disabled:opacity-50"
-              title="Refresh live data"
+              className="p-1 hover:bg-purple-100 text-purple-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
+              title="Click to fetch latest live Metabase records now"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-purple-600' : ''}`} />
             </button>
           </div>
         </div>

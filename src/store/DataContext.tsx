@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import type { DetailRow, DrilldownParams, SummaryMatrix, ToyType } from '../types';
 import { loadInventoryData } from '../api/loadData';
 
@@ -43,8 +43,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Modal drilldown state
   const [modalDrilldown, setModalDrilldown] = useState<DrilldownParams | null>(null);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     setIsError(false);
     setErrorMessage(null);
     try {
@@ -58,13 +58,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsError(true);
       setErrorMessage(err.message || 'Failed to fetch inventory datasets');
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchData(false);
+
+    // Auto-refresh every 5 minutes in background
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 5 * 60 * 1000);
+
+    // Refresh when user returns to the tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData(true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchData]);
 
   const hubs = useMemo(() => {
     return summaryMatrix ? summaryMatrix.hubs : [];
@@ -87,7 +106,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     errorMessage,
     isCachedFallback,
     dataTimestamp,
-    refetch: fetchData,
+    refetch: () => fetchData(false),
     selectedHub,
     setSelectedHub,
     selectedToyType,
