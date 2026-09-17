@@ -7,12 +7,13 @@ import {
   CheckCircle,
   AlertTriangle,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { useData } from '../store/DataContext';
 import { filterDetailRows } from '../data/drilldown';
 import type { DetailRow, ToyType } from '../types';
 import { Card } from '../components/ui/Card';
-import { DrilldownTable } from '../components/tables/DrilldownTable';
+import { DrilldownTable, METABASE_DAMAGE_REPORT_URL } from '../components/tables/DrilldownTable';
 import { Drawer } from '../components/ui/Drawer';
 import { formatNumber } from '../utils/format';
 
@@ -165,13 +166,28 @@ export const DrilldownPage: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Go Back</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {paramMetric === 'Damages' && (
+              <a
+                href={METABASE_DAMAGE_REPORT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 text-xs font-bold transition-colors shadow-2xs"
+                title="Open live interactive Metabase report in new tab"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-orange-600" />
+                <span>Live Metabase Damage Query</span>
+              </a>
+            )}
+
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Go Back</span>
+            </button>
+          </div>
         </div>
 
         {/* Verification Summary vs Detail Stats */}
@@ -340,6 +356,7 @@ export const DrilldownPage: React.FC = () => {
         <DrilldownTable
           rows={drilldownResult.rows}
           metricValueColumn={drilldownResult.metricValueColumn}
+          metricName={paramMetric}
           onRowClick={(row) => setSelectedDrawerToy(row)}
         />
       </Card>

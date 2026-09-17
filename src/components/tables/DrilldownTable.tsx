@@ -12,6 +12,7 @@ import {
   ArrowUp,
   ArrowDown,
   Download,
+  ExternalLink,
   CheckCircle2,
   XCircle,
   AlertCircle,
@@ -24,9 +25,13 @@ import type { DetailRow } from '../../types';
 import { formatNumber, formatDate } from '../../utils/format';
 import { ToyTypeBadge, AgeGroupChips } from '../ui/Badge';
 
+export const METABASE_DAMAGE_REPORT_URL = 'https://metabase-bkp.theelefant.ai/public/question/5eaf029f-c395-429b-a3b2-8557391d0dc9';
+export const METABASE_DAMAGE_CSV_URL = 'https://metabase-bkp.theelefant.ai/public/question/5eaf029f-c395-429b-a3b2-8557391d0dc9.csv';
+
 interface DrilldownTableProps {
   rows: DetailRow[];
   metricValueColumn?: 'total_stock' | 'rented_out' | 'available_stock' | 'damaged_stock' | 'count';
+  metricName?: string;
   highlightRowId?: string;
   onRowClick?: (row: DetailRow) => void;
 }
@@ -34,6 +39,7 @@ interface DrilldownTableProps {
 export const DrilldownTable: React.FC<DrilldownTableProps> = ({
   rows,
   metricValueColumn = 'total_stock',
+  metricName,
   onRowClick,
 }) => {
   const defaultSortId = useMemo(() => {
@@ -189,7 +195,9 @@ export const DrilldownTable: React.FC<DrilldownTableProps> = ({
     },
   });
 
-  const exportCSV = () => {
+  const isDamages = metricValueColumn === 'damaged_stock' || metricName === 'Damages';
+
+  const exportFilteredCSV = () => {
     if (!rows.length) return;
     const headers = [
       'Toy Name',
@@ -230,10 +238,14 @@ export const DrilldownTable: React.FC<DrilldownTableProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `the_elefant_inventory_drilldown_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `the_elefant_${isDamages ? 'damages' : 'inventory'}_drilldown_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleMetabaseDamageExport = () => {
+    window.open(METABASE_DAMAGE_CSV_URL, '_blank');
   };
 
   return (
@@ -243,13 +255,51 @@ export const DrilldownTable: React.FC<DrilldownTableProps> = ({
         <div className="text-slate-600 font-medium">
           Showing <strong className="text-slate-900">{formatNumber(rows.length)}</strong> matching toys
         </div>
-        <button
-          onClick={exportCSV}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-purple-200 hover:border-purple-400 text-purple-700 font-semibold shadow-sm hover:bg-purple-50 transition-colors"
-        >
-          <Download className="w-3.5 h-3.5 text-purple-600" />
-          <span>Export CSV</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {isDamages ? (
+            <>
+              {/* Direct Link to Metabase Interactive Report */}
+              <a
+                href={METABASE_DAMAGE_REPORT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 font-semibold shadow-2xs transition-colors"
+                title="Open live interactive Metabase report in new tab"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-orange-600" />
+                <span>Open Live Metabase Report</span>
+              </a>
+
+              {/* Primary Metabase Damage CSV Export */}
+              <button
+                onClick={handleMetabaseDamageExport}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow-sm transition-colors"
+                title="Export live Metabase damage records as CSV"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Damage CSV (Metabase)</span>
+              </button>
+
+              {/* Local Filtered Table Export */}
+              <button
+                onClick={exportFilteredCSV}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-purple-300 text-slate-700 hover:text-purple-700 font-medium transition-colors"
+                title="Export currently filtered table rows as CSV"
+              >
+                <span>Export Filtered Table</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={exportFilteredCSV}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-purple-200 hover:border-purple-400 text-purple-700 font-semibold shadow-sm hover:bg-purple-50 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5 text-purple-600" />
+              <span>Export CSV</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* TanStack Table Container with Sticky Header */}

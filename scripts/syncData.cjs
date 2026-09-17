@@ -4,6 +4,7 @@ const https = require('https');
 
 const SUMMARY_URL = 'https://metabase-bkp.theelefant.ai/public/question/4288db2b-326f-4e4b-9740-0d2446c827c1.csv';
 const DETAIL_URL = 'https://metabase-bkp.theelefant.ai/public/question/c1fe3252-e3b1-4117-959c-aa37271cf059.csv';
+const DAMAGE_URL = 'https://metabase-bkp.theelefant.ai/public/question/5eaf029f-c395-429b-a3b2-8557391d0dc9.csv';
 
 const PUBLIC_DATA_DIR = path.resolve(__dirname, '../public/data');
 
@@ -48,6 +49,11 @@ async function sync() {
     console.log('⏳ Downloading detail.csv...');
     const detailSize = await download(DETAIL_URL, detailDest);
     console.log(`✅ detail.csv updated (${(detailSize / (1024 * 1024)).toFixed(2)} MB)`);
+
+    const damageDest = path.join(PUBLIC_DATA_DIR, 'damage.csv');
+    console.log('⏳ Downloading damage.csv...');
+    const damageSize = await download(DAMAGE_URL, damageDest);
+    console.log(`✅ damage.csv updated (${(damageSize / 1024).toFixed(1)} KB)`);
 
     console.log('🎉 Live data sync complete!');
   } catch (err) {

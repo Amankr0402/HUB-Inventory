@@ -248,6 +248,7 @@ export const DrilldownModal: React.FC = () => {
             <DrilldownTable
               rows={drilldownResult.rows}
               metricValueColumn={drilldownResult.metricValueColumn}
+              metricName={currentMetric}
               onRowClick={(row) => setSelectedDrawerToy(row)}
             />
           </div>
