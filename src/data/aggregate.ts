@@ -1,7 +1,6 @@
 import type {
   ChartBucketItem,
   DetailRow,
-  HubDamageItem,
   HubSummary,
   StockOverviewStats,
   SummaryMatrix,
@@ -123,36 +122,6 @@ export function getTopHubsByDamages(
         color: colorObj.hex,
       };
     });
-}
-
-export function getHubDamageRankList(
-  summary: SummaryMatrix,
-  selectedType: ToyType = 'All'
-): HubDamageItem[] {
-  return summary.hubs
-    .map((hub) => {
-      const damages = summary.getValue('Damages', selectedType, hub);
-      const damageBig = summary.getValue('Damages', 'Big', hub);
-      const damageToy = summary.getValue('Damages', 'Toy', hub);
-      const damageBooks = summary.getValue('Damages', 'Books', hub);
-      const totalStock = summary.getValue('Total Stock', selectedType, hub);
-      const damageRate = totalStock > 0 ? damages / totalStock : 0;
-      const initials = computeInitials(hub);
-      const colorObj = getAvatarColor(hub);
-
-      return {
-        hub,
-        damages,
-        damageBig,
-        damageToy,
-        damageBooks,
-        totalStock,
-        damageRate,
-        initials,
-        color: colorObj.hex,
-      };
-    })
-    .sort((a, b) => b.damages - a.damages); // Top to bottom sorted by damage count
 }
 
 export function getAvailabilityBuckets(

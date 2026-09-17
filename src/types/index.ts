@@ -101,18 +101,6 @@ export interface TopHubItem {
   color: string;
 }
 
-export interface HubDamageItem {
-  hub: string;
-  damages: number;
-  damageBig: number;
-  damageToy: number;
-  damageBooks: number;
-  totalStock: number;
-  damageRate: number;
-  initials: string;
-  color: string;
-}
-
 export interface ChartBucketItem {
   label: string;
   count: number;

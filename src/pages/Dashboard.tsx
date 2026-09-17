@@ -13,7 +13,6 @@ import {
   getHubSummaries,
   getTopHubsByUtilisation,
   getTopHubsByDamages,
-  getHubDamageRankList,
   getAvailabilityBuckets,
   getAgeGroupCoverage,
 } from '../data/aggregate';
@@ -24,7 +23,6 @@ import { MetricTile } from '../components/ui/MetricTile';
 import { Avatar } from '../components/ui/Avatar';
 import { StockStackedBar } from '../components/charts/StockStackedBar';
 import { HubGroupedBar } from '../components/charts/HubGroupedBar';
-import { HubDamageLeaderboard } from '../components/charts/HubDamageLeaderboard';
 import { BucketBar } from '../components/charts/BucketBar';
 import { AgeGroupBar } from '../components/charts/AgeGroupBar';
 import { HubTable } from '../components/tables/HubTable';
@@ -62,11 +60,6 @@ export const Dashboard: React.FC = () => {
   const topDamageHubs = useMemo(() => {
     return getTopHubsByDamages(hubSummaries, 5);
   }, [hubSummaries]);
-
-  const hubDamageRankList = useMemo(() => {
-    if (!summaryMatrix) return [];
-    return getHubDamageRankList(summaryMatrix, selectedToyType);
-  }, [summaryMatrix, selectedToyType]);
 
   const availabilityBuckets = useMemo(() => {
     return getAvailabilityBuckets(detailRows, selectedHub, selectedToyType);
@@ -301,41 +294,7 @@ export const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* SECTION 4: ⚠️ HUB-WISE DAMAGE ANALYSIS (TOP TO BOTTOM) */}
-      <section id="damage-audit-section">
-        <SectionHeader
-          title="HUB-WISE DAMAGE ANALYSIS"
-          emoji="⚠️"
-          badge={`${selectedToyType === 'All' ? 'All Toy Types' : `${selectedToyType} Toys`} • Top to Bottom Ranked`}
-        />
-
-        <Card topBorderColor="#E11D48" className="p-4 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 border-b border-rose-100/70 pb-3">
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-900">
-                Total Hub-Wise Damage Counts
-              </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Ranked from highest damage to lowest • Click any hub to inspect damaged items
-              </p>
-            </div>
-            <button
-              onClick={() => triggerDrilldown('Damages', 'All')}
-              className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition-colors shadow-2xs"
-            >
-              Drill-down All Network Damages →
-            </button>
-          </div>
-
-          <HubDamageLeaderboard
-            items={hubDamageRankList}
-            onDrilldownDamages={(hub) => triggerDrilldown('Damages', hub)}
-            onSelectHub={(hub) => navigate(`/hub/${encodeURIComponent(hub)}`)}
-          />
-        </Card>
-      </section>
-
-      {/* SECTION 5: 🎯 KEY INSIGHTS */}
+      {/* SECTION 4: 🎯 KEY INSIGHTS */}
       <section>
         <SectionHeader title="KEY INSIGHTS" emoji="🎯" />
 
